@@ -1,35 +1,50 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import e from "cors";
+import React, { useEffect, useMemo, useState } from "react";
+import { io } from "socket.io-client";
+const App = () => {
+  // const socket = io("http://localhost:5000/");
+  const socket = useMemo(() => {
+    io("http://localhost:5000/");
+  }, []);
+  const [message, setMessage] = useState("");
 
-function App() {
-  const [count, setCount] = useState(0)
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log(`user connected ${socket.id}`);
+    });
+  }, []);
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    //sending data
+    socket.emit("message", message);
+    console.log(`message :"${message}" send by ${socket.id}`);
+
+    // socket.broadcast.emit();
+    socket.on("for-all", (res) => console.log(res));
+  };
   return (
     <>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+        <div>
+          <h1 className="text-3xl font-bold text-blue-600">Chat App </h1>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            placeholder="type message"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          ></input>
 
-export default App
+          <button type="submit" className="btn">
+            send
+          </button>
+        </form>
+      </div>
+    </>
+  );
+};
+
+export default App;
